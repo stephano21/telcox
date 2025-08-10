@@ -1,0 +1,75 @@
+:root {
+  --color-bg: #f5f5f5;
+  --color-text: #181818;
+  --color-primary: #007bff;
+  --color-card-bg: #fff;
+  --color-input-bg: #f0f0f0;
+  --color-border: #ccc;
+}
+
+body.light {
+  --color-bg: #f5f5f5;
+  --color-text: #181818;
+  --color-primary: #007bff;
+  --color-card-bg: #fff;
+  --color-input-bg: #f0f0f0;
+  --color-border: #ccc;
+}
+
+body.dark {
+  --color-bg: #181818;
+  --color-text: #f5f5f5;
+  --color-primary: #4f8cff;
+  --color-card-bg: #232323;
+  --color-input-bg: #222;
+  --color-border: #444;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  transition: background 0.2s, color 0.2s;
+}
+
+input, button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+input {
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.card {
+  background: var(--color-card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 32px 24px;
+  max-width: 400px;
+  width: 100%;
+} 

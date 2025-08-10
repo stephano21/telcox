@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: telcox-postgres
+    environment:
+      POSTGRES_DB: telcox_db
+      POSTGRES_USER: telcox_user
+      POSTGRES_PASSWORD: telcox_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - telcox-network
+
+  backend:
+    build: ./backend
+    container_name: telcox-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://telcox_user:telcox_password@postgres:5432/telcox_db
+      - SECRET_KEY=telcox_secret_key_2024_change_in_production
+      - DEBUG=true
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+    networks:
+      - telcox-network
+
+  frontend:
+    build: ./frontend
+    container_name: telcox-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - telcox-network
+
+volumes:
+  postgres_data:
+
+networks:
+  telcox-network:
+    driver: bridge
