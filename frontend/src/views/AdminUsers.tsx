@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -7,7 +7,7 @@ import {
   Modal,
   Form,
   Input,
-  InputNumber,
+
   message,
   Popconfirm,
   Tag,
@@ -15,11 +15,12 @@ import {
   Row,
   Col,
   Statistic,
-  Tooltip,
+
   Select,
   Switch,
   Divider,
-  Alert
+  Alert,
+  Avatar
 } from 'antd';
 import {
   TeamOutlined,
@@ -31,24 +32,24 @@ import {
   UserOutlined,
   MailOutlined,
   IdcardOutlined,
-  DollarOutlined,
+
   KeyOutlined,
   CrownOutlined
 } from '@ant-design/icons';
-import { adminService, UserListItem, Role, RegisterUserRequest } from '../services/api';
+import { telcoxService } from '../services/telcoxApi';
+import type { TelcoxUser, TelcoxUserCreate, TelcoxUserUpdate } from '../services/telcoxApi';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<UserListItem[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [users, setUsers] = useState<TelcoxUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
+  const [editingUser, setEditingUser] = useState<TelcoxUser | null>(null);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedEstado, setSelectedEstado] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -57,12 +58,8 @@ export default function AdminUsers() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersData, rolesData] = await Promise.all([
-        adminService.getAllUsers(),
-        adminService.getAllRoles()
-      ]);
-      setUsers(usersData);
-      setRoles(rolesData);
+      const usersData = await telcoxService.getUsers();
+      setUsers(usersData.items);
     } catch (error) {
       message.error('Error al cargar los datos');
       console.error('Error:', error);
@@ -77,23 +74,21 @@ export default function AdminUsers() {
     setModalVisible(true);
   };
 
-  const handleEdit = (user: UserListItem) => {
+  const handleEdit = (user: TelcoxUser) => {
     setEditingUser(user);
     form.setFieldsValue({
-      userName: user.userName,
+      nombre: user.nombre,
       email: user.email,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      cedula: user.cedula,
-      salario: user.salario
+      telefono: user.telefono,
+      plan_actual: user.plan_actual,
+      estado_cuenta: user.estado_cuenta
     });
     setModalVisible(true);
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await adminService.deleteUser(id);
+      await telcoxService.deleteUser(id);
       message.success('Usuario eliminado exitosamente');
       fetchData();
     } catch (error) {
@@ -104,8 +99,9 @@ export default function AdminUsers() {
 
   const handleToggleStatus = async (userId: string, isActive: boolean) => {
     try {
-      await adminService.toggleUserStatus(userId, isActive);
-      message.success(`Usuario ${isActive ? 'activado' : 'desactivado'} exitosamente`);
+      const newEstado = isActive ? 'activo' : 'suspendido';
+      await telcoxService.updateUser(userId, { estado_cuenta: newEstado });
+      message.success(`Usuario ${isActive ? 'activado' : 'suspendido'} exitosamente`);
       fetchData();
     } catch (error) {
       message.error('Error al cambiar el estado del usuario');
@@ -116,28 +112,31 @@ export default function AdminUsers() {
   const handleSubmit = async (values: any) => {
     try {
       if (editingUser) {
-        // Para editar, solo actualizamos el perfil por ahora
-        message.info('La edición de usuarios se implementará próximamente');
-        setModalVisible(false);
-        return;
+        // Actualizar usuario existente
+        const updateData: TelcoxUserUpdate = {
+          nombre: values.nombre,
+          email: values.email,
+          telefono: values.telefono,
+          plan_actual: values.plan_actual,
+          estado_cuenta: values.estado_cuenta
+        };
+
+        await telcoxService.updateUser(editingUser.id, updateData);
+        message.success('Usuario actualizado exitosamente');
+      } else {
+        // Crear nuevo usuario
+        const userData: TelcoxUserCreate = {
+          nombre: values.nombre,
+          email: values.email,
+          telefono: values.telefono,
+          plan_actual: values.plan_actual,
+          password: values.password
+        };
+
+        await telcoxService.createUser(userData);
+        message.success('Usuario creado exitosamente');
       }
-
-      // Crear nuevo usuario
-      const userData: RegisterUserRequest = {
-        userName: values.userName,
-        email: values.email,
-        role: values.role,
-        profile: {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          cedula: values.cedula,
-          salario: values.salario
-        },
-        password: values.password
-      };
-
-      await adminService.registerUser(userData);
-      message.success('Usuario creado exitosamente');
+      
       setModalVisible(false);
       form.resetFields();
       fetchData();
@@ -150,47 +149,45 @@ export default function AdminUsers() {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
-      user.userName.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.nombre.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.firstName.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.cedula.includes(searchText);
+      user.telefono.includes(searchText);
     
-    const matchesRole = !selectedRole || user.role === selectedRole;
+    const matchesEstado = !selectedEstado || user.estado_cuenta === selectedEstado;
     
-    return matchesSearch && matchesRole;
+    return matchesSearch && matchesEstado;
   });
 
   const getEstadoColor = (estado: string) => {
-    return estado === 'ACTIVO' ? 'green' : 'red';
+    return estado === 'activo' ? 'green' : 'red';
   };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'ADMIN': return 'red';
-      case 'MANAGER': return 'orange';
-      case 'USER': return 'blue';
+  const getPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'premium': return 'red';
+      case 'ilimitado': return 'orange';
+      case 'familiar': return 'blue';
       default: return 'default';
     }
   };
 
-  const activeUsers = users.filter(user => user.estado === 'ACTIVO').length;
-  const inactiveUsers = users.filter(user => user.estado === 'INACTIVO').length;
-  const adminUsers = users.filter(user => user.role === 'ADMIN').length;
+  const activeUsers = users.filter(user => user.estado_cuenta === 'activo').length;
+  const inactiveUsers = users.filter(user => user.estado_cuenta === 'suspendido').length;
+  const premiumUsers = users.filter(user => user.plan_actual === 'premium').length;
 
   const columns = [
     {
       title: 'Usuario',
       key: 'user',
       width: 200,
-      render: (_: any, record: UserListItem) => (
+      render: (_: any, record: TelcoxUser) => (
         <Space>
           <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }} />
           <div>
-            <Text strong>{record.userName}</Text>
+            <Text strong>{record.nombre}</Text>
             <br />
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              {record.firstName} {record.lastName}
+              {record.telefono}
             </Text>
           </div>
         </Space>
@@ -209,52 +206,40 @@ export default function AdminUsers() {
       ),
     },
     {
-      title: 'Cédula',
-      dataIndex: 'cedula',
-      key: 'cedula',
+      title: 'Teléfono',
+      dataIndex: 'telefono',
+      key: 'telefono',
       width: 120,
-      render: (cedula: string) => (
+      render: (telefono: string) => (
         <Space>
           <IdcardOutlined style={{ color: '#52c41a' }} />
-          <Text style={{ fontFamily: 'monospace' }}>{cedula}</Text>
+          <Text style={{ fontFamily: 'monospace' }}>{telefono}</Text>
         </Space>
       ),
     },
     {
-      title: 'Salario',
-      dataIndex: 'salario',
-      key: 'salario',
+      title: 'Plan',
+      dataIndex: 'plan_actual',
+      key: 'plan_actual',
       width: 120,
-      render: (salario: number | null) => (
-        <Space>
-          <DollarOutlined style={{ color: '#722ed1' }} />
-          <Text strong>{salario ? `$${salario.toFixed(2)}` : 'N/A'}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Rol',
-      dataIndex: 'role',
-      key: 'role',
-      width: 120,
-      render: (role: string) => (
-        <Tag color={getRoleColor(role)}>
-          <CrownOutlined /> {role}
+      render: (plan: string) => (
+        <Tag color={getPlanColor(plan)}>
+          <CrownOutlined /> {plan}
         </Tag>
       ),
     },
     {
       title: 'Estado',
-      dataIndex: 'estado',
-      key: 'estado',
+      dataIndex: 'estado_cuenta',
+      key: 'estado_cuenta',
       width: 120,
-      render: (estado: string, record: UserListItem) => (
+      render: (estado: string, record: TelcoxUser) => (
         <Space>
           <Tag color={getEstadoColor(estado)}>
             {estado}
           </Tag>
           <Switch
-            checked={estado === 'ACTIVO'}
+            checked={estado === 'activo'}
             onChange={(checked) => handleToggleStatus(record.id, checked)}
             size="small"
           />
@@ -262,19 +247,10 @@ export default function AdminUsers() {
       ),
     },
     {
-      title: 'Hacienda',
-      dataIndex: 'hacienda',
-      key: 'hacienda',
-      width: 120,
-      render: (hacienda: string) => (
-        <Tag color="geekblue">{hacienda}</Tag>
-      ),
-    },
-    {
       title: 'Acciones',
       key: 'actions',
       width: 150,
-      render: (_: any, record: UserListItem) => (
+      render: (_: any, record: TelcoxUser) => (
         <Space size="small">
           <Button
             type="primary"
@@ -329,15 +305,14 @@ export default function AdminUsers() {
               style={{ width: 250 }}
             />
             <Select
-              placeholder="Filtrar por rol"
-              value={selectedRole}
-              onChange={setSelectedRole}
+              placeholder="Filtrar por estado"
+              value={selectedEstado}
+              onChange={setSelectedEstado}
               style={{ width: 150 }}
               allowClear
             >
-              {roles.map(role => (
-                <Option key={role.id} value={role.role}>{role.role}</Option>
-              ))}
+              <Option value="activo">Activo</Option>
+              <Option value="suspendido">Suspendido</Option>
             </Select>
             <Button
               icon={<ReloadOutlined />}
@@ -392,8 +367,8 @@ export default function AdminUsers() {
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Administradores"
-              value={adminUsers}
+              title="Usuarios Premium"
+              value={premiumUsers}
               prefix={<CrownOutlined style={{ color: '#f5222d' }} />}
               valueStyle={{ color: '#f5222d' }}
             />
@@ -419,9 +394,9 @@ export default function AdminUsers() {
         />
       </Card>
 
-      {/* Modal para Crear Usuario */}
+      {/* Modal para Crear/Editar Usuario */}
       <Modal
-        title="Nuevo Usuario"
+        title={editingUser ? "Editar Usuario" : "Nuevo Usuario"}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -432,28 +407,26 @@ export default function AdminUsers() {
           layout="vertical"
           onFinish={handleSubmit}
           initialValues={{ 
-            userName: '', 
+            nombre: '', 
             email: '', 
-            role: 'USER',
-            firstName: '', 
-            lastName: '', 
-            cedula: '', 
-            salario: undefined,
+            telefono: '',
+            plan_actual: 'familiar',
+            estado_cuenta: 'activo',
             password: ''
           }}
         >
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="userName"
-                label="Nombre de Usuario"
+                name="nombre"
+                label="Nombre Completo"
                 rules={[
-                  { required: true, message: 'Por favor ingresa el nombre de usuario' },
-                  { min: 3, message: 'El nombre de usuario debe tener al menos 3 caracteres' },
+                  { required: true, message: 'Por favor ingresa el nombre completo' },
+                  { min: 2, message: 'El nombre debe tener al menos 2 caracteres' },
                 ]}
               >
                 <Input
-                  placeholder="Ej: juan.perez"
+                  placeholder="Juan Pérez"
                   size="large"
                   prefix={<UserOutlined />}
                 />
@@ -480,48 +453,15 @@ export default function AdminUsers() {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="firstName"
-                label="Nombre"
+                name="telefono"
+                label="Teléfono"
                 rules={[
-                  { required: true, message: 'Por favor ingresa el nombre' },
-                  { min: 2, message: 'El nombre debe tener al menos 2 caracteres' },
+                  { required: true, message: 'Por favor ingresa el teléfono' },
+                  { min: 10, message: 'El teléfono debe tener al menos 10 dígitos' },
                 ]}
               >
                 <Input
-                  placeholder="Juan"
-                  size="large"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="lastName"
-                label="Apellido"
-                rules={[
-                  { required: true, message: 'Por favor ingresa el apellido' },
-                  { min: 2, message: 'El apellido debe tener al menos 2 caracteres' },
-                ]}
-              >
-                <Input
-                  placeholder="Pérez"
-                  size="large"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="cedula"
-                label="Cédula"
-                rules={[
-                  { required: true, message: 'Por favor ingresa la cédula' },
-                  { min: 10, message: 'La cédula debe tener al menos 10 dígitos' },
-                ]}
-              >
-                <Input
-                  placeholder="1234567890"
+                  placeholder="0987654321"
                   size="large"
                   prefix={<IdcardOutlined />}
                   style={{ fontFamily: 'monospace' }}
@@ -530,64 +470,83 @@ export default function AdminUsers() {
             </Col>
             <Col span={12}>
               <Form.Item
-                name="salario"
-                label="Salario ($)"
+                name="plan_actual"
+                label="Plan"
                 rules={[
-                  { required: true, message: 'Por favor ingresa el salario' },
-                  { type: 'number', min: 0, message: 'El salario debe ser mayor o igual a 0' },
+                  { required: true, message: 'Por favor selecciona el plan' },
                 ]}
               >
-                <InputNumber
-                  placeholder="0.00"
-                  size="large"
-                  style={{ width: '100%' }}
-                  min={0}
-                  precision={2}
-                  prefix={<DollarOutlined />}
-                />
+                <Select size="large" placeholder="Selecciona el plan">
+                  <Option value="familiar">Familiar</Option>
+                  <Option value="ilimitado">Ilimitado</Option>
+                  <Option value="premium">Premium</Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="role"
-                label="Rol"
-                rules={[
-                  { required: true, message: 'Por favor selecciona el rol' },
-                ]}
-              >
-                <Select size="large" placeholder="Selecciona el rol">
-                  {roles.map(role => (
-                    <Option key={role.id} value={role.role}>{role.role}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="password"
-                label="Contraseña"
-                rules={[
-                  { required: true, message: 'Por favor ingresa la contraseña' },
-                  { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' },
-                ]}
-              >
-                <Input.Password
-                  placeholder="••••••••"
-                  size="large"
-                  prefix={<KeyOutlined />}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          {!editingUser && (
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="password"
+                  label="Contraseña"
+                  rules={[
+                    { required: true, message: 'Por favor ingresa la contraseña' },
+                    { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' },
+                  ]}
+                >
+                  <Input.Password
+                    placeholder="••••••••"
+                    size="large"
+                    prefix={<KeyOutlined />}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="estado_cuenta"
+                  label="Estado de la Cuenta"
+                  rules={[
+                    { required: true, message: 'Por favor selecciona el estado' },
+                  ]}
+                >
+                  <Select size="large" placeholder="Selecciona el estado">
+                    <Option value="activo">Activo</Option>
+                    <Option value="suspendido">Suspendido</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
+
+          {editingUser && (
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="estado_cuenta"
+                  label="Estado de la Cuenta"
+                  rules={[
+                    { required: true, message: 'Por favor selecciona el estado' },
+                  ]}
+                >
+                  <Select size="large" placeholder="Selecciona el estado">
+                    <Option value="activo">Activo</Option>
+                    <Option value="suspendido">Suspendido</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
 
           <Divider />
 
           <Alert
             message="Información Importante"
-            description="La contraseña se enviará por email al usuario. Asegúrate de que el email sea correcto."
+            description={editingUser 
+              ? "Los cambios se aplicarán inmediatamente al usuario."
+              : "La contraseña se enviará por email al usuario. Asegúrate de que el email sea correcto."
+            }
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
@@ -599,7 +558,7 @@ export default function AdminUsers() {
                 Cancelar
               </Button>
               <Button type="primary" htmlType="submit">
-                Crear Usuario
+                {editingUser ? 'Actualizar Usuario' : 'Crear Usuario'}
               </Button>
             </Space>
           </Form.Item>

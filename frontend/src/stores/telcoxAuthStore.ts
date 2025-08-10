@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { telcoxAuthService, TelcoxLoginRequest, TelcoxLoginResponse, TelcoxClienteResponse } from '../services/telcoxApi';
+import { telcoxService, type TelcoxLoginRequest, type TelcoxLoginResponse, type TelcoxUser } from '../services/telcoxApi';
 import { config } from '../config/env';
 
 interface TelcoxAuthState {
@@ -10,7 +10,7 @@ interface TelcoxAuthState {
   error: string | null;
   
   // Datos del usuario
-  user: TelcoxClienteResponse | null;
+  user: TelcoxUser | null;
   token: string | null;
   
   // Acciones
@@ -35,7 +35,7 @@ export const useTelcoxAuthStore = create<TelcoxAuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          const response: TelcoxLoginResponse = await telcoxAuthService.login(credentials);
+          const response: TelcoxLoginResponse = await telcoxService.login(credentials);
           
           set({
             isAuthenticated: true,

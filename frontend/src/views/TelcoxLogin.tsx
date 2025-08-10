@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Input, Button, Typography, Alert, Space } from 'antd';
+import { Card, Form, Input, Button, Typography, Alert } from 'antd';
 import { UserOutlined, LockOutlined, DatabaseOutlined } from '@ant-design/icons';
-import { telcoxAuthService } from '../services/telcoxApi';
+import { telcoxService } from '../services/telcoxApi';
 import { config } from '../config/env';
 import * as localforage from 'localforage';
 
@@ -25,7 +25,7 @@ export default function TelcoxLogin() {
     try {
       console.log('Intentando login con:', values.email);
       
-      const response = await telcoxAuthService.login({
+      const response = await telcoxService.login({
         email: values.email,
         password: values.password
       });

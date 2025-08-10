@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import AppRoutes from './routes';
 import { useThemeStore } from './stores/themeStore';
 import { ConfigProvider, theme as antdTheme } from 'antd';

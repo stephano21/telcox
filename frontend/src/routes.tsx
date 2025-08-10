@@ -4,16 +4,14 @@ import { useAuthStore } from './stores/authStore';
 import AppLayout from './views/Layout';
 import Dashboard from './views/Dashboard';
 import Profile from './views/Profile';
-import Home from './views/Home';
+// import Home from './views/Home';
+import AdminUsers from './views/AdminUsers';
 
 // Componentes de ejemplo
 type LazyComponent = React.LazyExoticComponent<React.ComponentType<any>>;
-const Login: LazyComponent = React.lazy(() => import('./views/Login'));
-const Plagas: LazyComponent = React.lazy(() => import('./views/Plagas'));
-const Insumos: LazyComponent = React.lazy(() => import('./views/Insumos'));
-const Equipos: LazyComponent = React.lazy(() => import('./views/Equipos'));
-const Lotes: LazyComponent = React.lazy(() => import('./views/Lotes'));
+// const Login: LazyComponent = React.lazy(() => import('./views/Login'));
 const Consumo: LazyComponent = React.lazy(() => import('./views/Consumo'));
+const FacturasPagadas: LazyComponent = React.lazy(() => import('./views/FacturasPagadas'));
 const TelcoxLogin: LazyComponent = React.lazy(() => import('./views/TelcoxLogin'));
 
 // Ruta privada para el sistema principal
@@ -75,7 +73,6 @@ export default function AppRoutes() {
       <React.Suspense fallback={<div>Cargando...</div>}>
         <Routes>
           {/* Rutas públicas */}
-          <Route path="/login" element={<Login />} />
           <Route path="/telcox/login" element={<TelcoxLogin />} />
 
           {/* Rutas privadas con layout para el sistema principal */}
@@ -84,22 +81,18 @@ export default function AppRoutes() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/perfil" element={<Profile />} />
-              
-              {/* Catálogos */}
-              <Route path="/catalogos/plagas" element={<Plagas />} />
-              <Route path="/catalogos/insumos" element={<Insumos />} />
-              <Route path="/catalogos/equipo" element={<Equipos />} />
-              <Route path="/catalogos/lotes" element={<Lotes />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
             </Route>
           </Route>
 
           {/* Rutas privadas para TelcoX (sin layout del sistema principal) */}
           <Route element={<TelcoxPrivateRoute />}>
             <Route path="/consumo" element={<Consumo />} />
+            <Route path="/facturas-pagadas" element={<FacturasPagadas />} />
           </Route>
 
           {/* Redirección por defecto */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/telcox/login" replace />} />
         </Routes>
       </React.Suspense>
     </BrowserRouter>

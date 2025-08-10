@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { message, Input, Button } from 'antd';
@@ -7,8 +7,8 @@ import { authService } from '../services/api';
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const lastPrivateRoute = useAuthStore((state) => state.lastPrivateRoute);
@@ -26,7 +26,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    // setError(null);
     if (!username.trim() || !password.trim()) {
       message.warning('Por favor, completa ambos campos.');
       return;

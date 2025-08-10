@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { Avatar, Card, Form, Input, InputNumber, Button, message, Divider, Row, Col, Typography, Space, Modal, Progress } from 'antd';
+import { Avatar, Card, Form, Input, InputNumber, Button, message, Row, Col, Typography, Space, Modal, Progress } from 'antd';
 import { UserOutlined, EditOutlined, SaveOutlined, CloseOutlined, LockOutlined } from '@ant-design/icons';
 import { authService } from '../services/api';
-import type { UpdateProfileRequest, UserProfile, ChangePasswordRequest } from '../services/api';
+import type { UserProfile } from '../services/api';
 
 const { Title, Text } = Typography;
 const { Password } = Input;

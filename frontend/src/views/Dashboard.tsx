@@ -1,50 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Button, Space, Typography, Divider, List, Avatar, Tag } from 'antd';
+
+import { Card, Row, Col, Statistic, Button, Typography, Divider } from 'antd';
 import { 
   BugOutlined, 
   ToolOutlined, 
   DatabaseOutlined, 
   UserOutlined, 
   LogoutOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
   FieldTimeOutlined
 } from '@ant-design/icons';
-import { plagaService, insumoService, equipoService, loteService } from '../services/api';
+
 
 const { Title, Text } = Typography;
 
 export default function Dashboard() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
-  const [plagas, setPlagas] = useState<Plaga[]>([]);
-  const [insumos, setInsumos] = useState<Insumo[]>([]);
-  const [equipos, setEquipos] = useState<Equipo[]>([]);
-  const [lotes, setLotes] = useState<Lote[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // const [plagas, setPlagas] = useState<Plaga[]>([]);
+  // const [insumos, setInsumos] = useState<Insumo[]>([]);
+  // const [equipos, setEquipos] = useState<Equipo[]>([]);
+  // const [lotes, setLotes] = useState<Lote[]>([]);
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [plagasData, insumosData, equiposData, lotesData] = await Promise.all([
-          plagaService.getAll(),
-          insumoService.getAll(),
-          equipoService.getAll(),
-          loteService.getAll()
-        ]);
-        setPlagas(plagasData);
-        setInsumos(insumosData);
-        setEquipos(equiposData);
-        setLotes(lotesData);
+        // const [plagasData, insumosData, equiposData, lotesData] = await Promise.all([
+        //   plagaService.getAll(),
+        //   insumoService.getAll(),
+        //   equipoService.getAll(),
+        //   loteService.getAll()
+        // ]);
+        // setPlagas(plagasData);
+        // setInsumos(insumosData);
+        // setEquipos(equiposData);
+        // setLotes(lotesData);
       } catch (error) {
         console.error('Error al cargar datos:', error);
-      } finally {
-        setLoading(false);
-      }
+              } finally {
+          // setLoading(false);
+        }
     };
 
     fetchData();
@@ -92,7 +89,7 @@ export default function Dashboard() {
           <Card>
             <Statistic
               title="Plagas Registradas"
-              value={plagas.length}
+              value={0}
               prefix={<BugOutlined style={{ color: '#ff4d4f' }} />}
               valueStyle={{ color: '#ff4d4f' }}
             />
@@ -102,7 +99,7 @@ export default function Dashboard() {
           <Card>
             <Statistic
               title="Insumos Disponibles"
-              value={insumos.length}
+              value={0}
               prefix={<DatabaseOutlined style={{ color: '#1890ff' }} />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -112,7 +109,7 @@ export default function Dashboard() {
           <Card>
             <Statistic
               title="Equipos Activos"
-              value={equipos.length}
+              value={0}
               prefix={<ToolOutlined style={{ color: '#52c41a' }} />}
               valueStyle={{ color: '#52c41a' }}
             />
@@ -122,7 +119,7 @@ export default function Dashboard() {
           <Card>
             <Statistic
               title="Stock Total"
-              value={insumos.reduce((sum, item) => sum + item.stock, 0) + equipos.reduce((sum, item) => sum + item.stock, 0)}
+              value={0}
               prefix={<DatabaseOutlined style={{ color: '#722ed1' }} />}
               valueStyle={{ color: '#722ed1' }}
             />
@@ -132,7 +129,7 @@ export default function Dashboard() {
           <Card>
             <Statistic
               title="Lotes Activos"
-              value={lotes.filter(item => item.estado === 'ACTIVO').length}
+              value={0}
               prefix={<FieldTimeOutlined style={{ color: '#52c41a' }} />}
               valueStyle={{ color: '#52c41a' }}
             />
@@ -140,8 +137,8 @@ export default function Dashboard() {
         </Col>
       </Row>
 
-      {/* Sección de Plagas */}
-      <Card 
+      {/* Sección de Plagas - Comentada temporalmente */}
+      {/* <Card 
         title={
           <Space>
             <BugOutlined style={{ color: '#ff4d4f' }} />
@@ -160,7 +157,7 @@ export default function Dashboard() {
       >
         <List
           loading={loading}
-          dataSource={plagas.slice(0, 5)}
+          dataSource={[]}
           renderItem={(plaga) => (
             <List.Item
               actions={[
@@ -180,17 +177,17 @@ export default function Dashboard() {
             </List.Item>
           )}
         />
-        {plagas.length > 5 && (
+        {false && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <Button type="link" onClick={() => navigate('/catalogos/plagas')}>
-              Ver todas las plagas ({plagas.length})
+              Ver todas las plagas (0)
             </Button>
           </div>
         )}
-      </Card>
+      </Card> */}
 
-      {/* Sección de Insumos */}
-      <Card 
+      {/* Sección de Insumos - Comentada temporalmente */}
+      {/* <Card 
         title={
           <Space>
             <DatabaseOutlined style={{ color: '#1890ff' }} />
@@ -209,7 +206,7 @@ export default function Dashboard() {
       >
         <List
           loading={loading}
-          dataSource={insumos.slice(0, 5)}
+          dataSource={[]}
           renderItem={(insumo) => (
             <List.Item
               actions={[
@@ -236,17 +233,17 @@ export default function Dashboard() {
             </List.Item>
           )}
         />
-        {insumos.length > 5 && (
+        {false && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <Button type="link" onClick={() => navigate('/catalogos/insumos')}>
-              Ver todos los insumos ({insumos.length})
+              Ver todos los insumos (0)
             </Button>
           </div>
         )}
-      </Card>
+      </Card> */}
 
-      {/* Sección de Equipos */}
-      <Card 
+      {/* Sección de Equipos - Comentada temporalmente */}
+      {/* <Card 
         title={
           <Space>
             <ToolOutlined style={{ color: '#52c41a' }} />
@@ -265,7 +262,7 @@ export default function Dashboard() {
       >
         <List
           loading={loading}
-          dataSource={equipos.slice(0, 5)}
+          dataSource={[]}
           renderItem={(equipo) => (
             <List.Item
               actions={[
@@ -292,17 +289,17 @@ export default function Dashboard() {
             </List.Item>
           )}
         />
-        {equipos.length > 5 && (
+        {false && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <Button type="link" onClick={() => navigate('/catalogos/equipo')}>
-              Ver todos los equipos ({equipos.length})
+              Ver todos los equipos (0)
             </Button>
           </div>
         )}
-      </Card>
+      </Card> */}
 
-      {/* Sección de Lotes */}
-      <Card 
+      {/* Sección de Lotes - Comentada temporalmente */}
+      {/* <Card 
         title={
           <Space>
             <FieldTimeOutlined style={{ color: '#52c41a' }} />
@@ -320,7 +317,7 @@ export default function Dashboard() {
       >
         <List
           loading={loading}
-          dataSource={lotes.slice(0, 5)}
+          dataSource={[]}
           renderItem={(lote) => (
             <List.Item
               actions={[
@@ -342,19 +339,19 @@ export default function Dashboard() {
                     </Tag>
                   </Space>
                 }
-                description={`${lote.cultivo} - Área: ${lote.area} ha - Ubicación: ${lote.ubicacion}`}
+                description={`${lote.cultivo} - Área: ${lote.estado} ha - Ubicación: ${lote.ubicacion}`}
               />
             </List.Item>
           )}
         />
-        {lotes.length > 5 && (
+        {false && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <Button type="link" onClick={() => navigate('/catalogos/lotes')}>
-              Ver todos los lotes ({lotes.length})
+              Ver todos los lotes (0)
             </Button>
           </div>
         )}
-      </Card>
+      </Card> */}
 
       {/* Información del usuario */}
       <Divider />
